@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package net.desource.gradle.plugin.gwt
+package org.gradle.api.plugins.gwt
 
 import org.gradle.api.Project
 
@@ -22,7 +22,7 @@ import org.gradle.api.Project
  * 
  * @author Markus Kobler
  */
-class Gwt2PluginConvention {
+class GwtPluginConvention {
 
     Project project
 
@@ -30,7 +30,7 @@ class Gwt2PluginConvention {
 
     String excludePattern = "(.*/client/.*)|(.*/public/.*)|(.*.gwt.xml)"
 
-    Gwt2PluginConvention(project) {
+    GwtPluginConvention(project) {
         this.project = project
     }
 

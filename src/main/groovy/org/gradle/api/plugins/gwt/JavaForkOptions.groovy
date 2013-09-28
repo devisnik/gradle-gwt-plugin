@@ -13,40 +13,35 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package net.desource.gradle.plugin.gwt
+package org.gradle.api.plugins.gwt
 
 import org.gradle.api.tasks.compile.AbstractOptions
 
 /**
- *
+ * TODO check that this is still similar to standard gradle approach
+ * 
  * @author Markus Kobler
  */
-class JavaOptions extends AbstractOptions {
+class JavaForkOptions extends AbstractOptions {
 
-    boolean fork = true
-    boolean failOnError = true
+    String  maxMemory = "384m"
+    
+    boolean newEnvironment = false
+    boolean cloneVm = false
 
-    JavaForkOptions forkOptions = new JavaForkOptions()
-
-    Map systemProperties = [:]
-    Map environment = [:]
+    List jvmArgs
+    Map environment
 
     Map fieldName2AntMap() {
-        [ failOnError: 'failonerror' ]
+        [
+            maxMemory: "maxmemory",
+            newEnvironment: 'newenvironment',
+            cloneVm: 'clonevm'            
+        ]
     }
 
-    def List excludedFieldsFromOptionMap() {
-        ['systemProperties','environment','forkOptions']
+    List excludedFieldsFromOptionMap() {
+        ['environment', 'jvmArgs']
     }
 
-    def Map optionMap() {
-        return super.optionMap() + forkOptions.optionMap();
-    }
-
-    JavaOptions fork(Map args) {
-        fork = true
-        forkOptions.define args
-        this
-    }
-    
 }

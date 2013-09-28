@@ -13,51 +13,49 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package net.desource.gradle.plugin.gwt
+package org.gradle.api.plugins.gwt
 
 import org.gradle.api.Project
-
+import org.gradle.api.Task
+import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.gwt.CompileGwt
+import org.gradle.api.plugins.gwt.GwtPlugin
+import org.gradle.api.plugins.gwt.GwtPluginConvention
+import org.gradle.testfixtures.ProjectBuilder
+import org.hamcrest.*
 import org.junit.Before
 import org.junit.Test
-import org.gradle.testfixtures.ProjectBuilder
-import org.gradle.api.plugins.JavaPlugin
-import static org.hamcrest.Matchers.*
-import static org.junit.Assert.*
 
-import org.gradle.api.Task
-import org.hamcrest.Matcher
-import org.hamcrest.BaseMatcher
-import org.hamcrest.StringDescription
-import org.hamcrest.Description
-import org.hamcrest.Factory
-import org.gradle.api.plugins.WarPlugin
+import static org.hamcrest.core.IsEqual.equalTo
+import static org.hamcrest.core.IsInstanceOf.instanceOf
+import static org.junit.Assert.assertThat
+import static org.junit.Assert.assertTrue
 
 /**
  * 
  */
-class Gwt2PluginTest {
+class GwtPluginTest {
 
     private Project project
-    private Gwt2Plugin gwt2Plugin
+    private GwtPlugin gwt2Plugin
 
     @Before
     public void setUp() {
         project = ProjectBuilder.builder().build()
-        new WarPlugin().apply(project)
-        gwt2Plugin = new Gwt2Plugin()
+        gwt2Plugin = new GwtPlugin()
     }
 
     @Test public void appliesJavaPluginsAndAddsConvention() {
         gwt2Plugin.apply(project)
 
         assertTrue(project.getPlugins().hasPlugin(JavaPlugin));
-        assertThat(project.convention.plugins.gwt, instanceOf(Gwt2PluginConvention))
+        assertThat(project.convention.plugins.gwt, instanceOf(GwtPluginConvention))
     }
 
     @Test public void addsTasksToProject() {
         gwt2Plugin.apply(project)
 
-        def task = project.tasks[Gwt2Plugin.COMPILE_GWT_TASK_NAME]
+        def task = project.tasks[GwtPlugin.COMPILE_GWT_TASK_NAME]
         assertThat(task, instanceOf(CompileGwt))
         assertThat(task, dependsOn(JavaPlugin.CLASSES_TASK_NAME))
 

@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package net.desource.gradle.plugin.gwt
+package org.gradle.api.plugins.gwt
 
 import org.gradle.api.tasks.StopActionException
 import org.gradle.api.tasks.TaskAction

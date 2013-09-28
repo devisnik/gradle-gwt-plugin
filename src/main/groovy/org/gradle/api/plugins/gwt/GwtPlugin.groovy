@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package net.desource.gradle.plugin.gwt
+package org.gradle.api.plugins.gwt
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -31,7 +31,7 @@ import org.gradle.api.tasks.testing.Test
  *
  * @author Markus Kobler
  */
-class Gwt2Plugin implements Plugin<Project> {
+class GwtPlugin implements Plugin<Project> {
 
     public static final String GWT_CONFIGURATION_NAME = "gwt";
 
@@ -47,7 +47,7 @@ class Gwt2Plugin implements Plugin<Project> {
         project.plugins.apply(JavaPlugin.class)
         project.plugins.apply(WarPlugin.class)
 
-        Gwt2PluginConvention pluginConvention = new Gwt2PluginConvention(project)
+        GwtPluginConvention pluginConvention = new GwtPluginConvention(project)
         project.convention.plugins.gwt = pluginConvention
 
         addCompileGwtTask(project)
@@ -73,7 +73,7 @@ class Gwt2Plugin implements Plugin<Project> {
 
         project.tasks.withType(CompileGwt.class).all { CompileGwt task ->
 
-            task.conventionMapping.modules = { project.convention.getPlugin(Gwt2PluginConvention.class).gwtModules }
+            task.conventionMapping.modules = { project.convention.getPlugin(GwtPluginConvention.class).gwtModules }
 
             task.buildDir = project.file("build/gwt/out")
             task.workDir  = project.file("build/gwt/work")
@@ -107,7 +107,7 @@ class Gwt2Plugin implements Plugin<Project> {
 
         project.tasks.withType(GwtDevMode.class).all { GwtDevMode task ->
 
-            task.conventionMapping.modules = { project.convention.getPlugin(Gwt2PluginConvention.class).gwtModules }
+            task.conventionMapping.modules = { project.convention.getPlugin(GwtPluginConvention.class).gwtModules }
 
             task.conventionMapping.classpath = {
                 SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention.class).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
@@ -190,7 +190,7 @@ class Gwt2Plugin implements Plugin<Project> {
     private void excludeFiles(final Project project) {
         project.tasks.withType(War.class).all { War war ->
 
-            def excludePattern = project.convention.getPlugin(Gwt2PluginConvention.class).excludePattern
+            def excludePattern = project.convention.getPlugin(GwtPluginConvention.class).excludePattern
 
             if( excludePattern != null && excludePattern.length() > 0) {
                 war.doFirst {
@@ -207,7 +207,7 @@ class Gwt2Plugin implements Plugin<Project> {
 
 //    XXX re-implement?
 //    ====================================================================================================================
-//    private void configureGwtDependenciesIfVersionSpecified(final Project project, final Gwt2PluginConvention convention) {
+//    private void configureGwtDependenciesIfVersionSpecified(final Project project, final GwtPluginConvention convention) {
 //        project.getGradle().getTaskGraph().whenReady {TaskExecutionGraph taskGraph ->
 //
 //            if( convention.gwtVersion != null && convention.gwtVersion.trim().length() > 0) {
@@ -237,7 +237,7 @@ class Gwt2Plugin implements Plugin<Project> {
 //        }
 //    }
 //
-//    private void configureJarTaskDefaults(final Project project, final Gwt2PluginConvention pluginConvention) {
+//    private void configureJarTaskDefaults(final Project project, final GwtPluginConvention pluginConvention) {
 //        Jar jarTask = (Jar) project.getTasks().findByName(JavaPlugin.JAR_TASK_NAME)
 //
 //        if (jarTask != null) {

@@ -1,4 +1,4 @@
-package net.desource.gradle.plugin.gwt
+package org.gradle.api.plugins.gwt
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
