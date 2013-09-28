@@ -15,22 +15,18 @@
  */
 package net.desource.gradle.plugin.gwt
 
-import org.gradle.api.Project
 import org.gradle.api.Plugin
-import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.tasks.SourceSet
-import org.gradle.api.plugins.JavaPluginConvention
+import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
-import org.gradle.api.plugins.WarPluginConvention
-import org.gradle.api.plugins.WarPlugin
 import org.gradle.api.artifacts.UnknownConfigurationException
-import org.gradle.api.execution.TaskExecutionGraph
-import org.gradle.api.artifacts.ExternalModuleDependency
-import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
-import org.gradle.api.tasks.testing.Test
+import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.JavaPluginConvention
+import org.gradle.api.plugins.WarPlugin
+import org.gradle.api.plugins.WarPluginConvention
+import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.bundling.War
-
+import org.gradle.api.tasks.testing.Test
 /**
  *
  * @author Markus Kobler
@@ -49,6 +45,7 @@ class Gwt2Plugin implements Plugin<Project> {
 
     void apply(Project project) {
         project.plugins.apply(JavaPlugin.class)
+        project.plugins.apply(WarPlugin.class)
 
         Gwt2PluginConvention pluginConvention = new Gwt2PluginConvention(project)
         project.convention.plugins.gwt = pluginConvention
@@ -95,6 +92,12 @@ class Gwt2Plugin implements Plugin<Project> {
 
         CompileGwt compileGwt = project.tasks.create(COMPILE_GWT_TASK_NAME, CompileGwt.class)
         compileGwt.dependsOn(JavaPlugin.CLASSES_TASK_NAME)
+
+        project.tasks.war.dependsOn(compileGwt)
+        project.tasks.war.configure {
+            from compileGwt.buildDir
+        }
+
         compileGwt.description = "Compile GWT Modules"
     }
 
