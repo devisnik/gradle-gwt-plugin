@@ -16,7 +16,7 @@
 defaultTasks 'assemble'
 
 repositories {
-    mavenRepo(urls: 'http://repo.gradle.org/gradle/libs')
+    maven { url { 'http://repo.gradle.org/gradle/libs' } }
 }
 
 allprojects {
@@ -24,11 +24,10 @@ allprojects {
     apply plugin: 'groovy'
 
     group = 'net.desource.gradle'
-    artifactId = 'gradle-gwt-plugin'
     version = '0.3-SNAPSHOT'
 }
 
-libraries = [
+def libraries = [
         hamcrest_core: 'org.hamcrest:hamcrest-core:1.1@jar',
         hamcrest_lib:  'org.hamcrest:hamcrest-library:1.1@jar',
         objenesis:     'org.objenesis:objenesis:1.2@jar',
@@ -48,7 +47,7 @@ libraries.jmock = [ 'org.jmock:jmock:2.5.1@jar',
 
 dependencies {
 
-    groovy localGroovy();
+    compile localGroovy();
 
     compile gradleApi()
 
@@ -64,7 +63,7 @@ idea {
 
     project {
         wildcards += ['?*.gradle']
-        javaVersion = '1.6'
+        languageLevel = '1.6'
     }
 }
 
