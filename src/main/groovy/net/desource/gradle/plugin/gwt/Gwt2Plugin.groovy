@@ -87,13 +87,13 @@ class Gwt2Plugin implements Plugin<Project> {
                 SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention.class).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
                 project.files(mainSourceSet.resources.srcDirs,
                               mainSourceSet.java.srcDirs,
-                              mainSourceSet.classesDir,
+                              mainSourceSet.output.classesDir,
                               mainSourceSet.compileClasspath);
             }
 
         }
 
-        CompileGwt compileGwt = project.tasks.add(COMPILE_GWT_TASK_NAME, CompileGwt.class)
+        CompileGwt compileGwt = project.tasks.create(COMPILE_GWT_TASK_NAME, CompileGwt.class)
         compileGwt.dependsOn(JavaPlugin.CLASSES_TASK_NAME)
         compileGwt.description = "Compile GWT Modules"
     }
@@ -120,7 +120,7 @@ class Gwt2Plugin implements Plugin<Project> {
             }
         }
 
-        GwtDevMode gwtDevMode = project.tasks.add(GWT_DEV_MODE_TASK_NAME, GwtDevMode.class)
+        GwtDevMode gwtDevMode = project.tasks.create(GWT_DEV_MODE_TASK_NAME, GwtDevMode.class)
         gwtDevMode.dependsOn(JavaPlugin.CLASSES_TASK_NAME)
         gwtDevMode.description = "Run's GWT Developer Mode"
 
@@ -133,7 +133,7 @@ class Gwt2Plugin implements Plugin<Project> {
             task.webappBase = getWebappDir(project)
         }
 
-        SyncCompiledGwt syncCompiledGwt = project.tasks.add(SYNC_COMPILED_GWT_TASK_NAME, SyncCompiledGwt.class)
+        SyncCompiledGwt syncCompiledGwt = project.tasks.create(SYNC_COMPILED_GWT_TASK_NAME, SyncCompiledGwt.class)
         syncCompiledGwt.dependsOn(COMPILE_GWT_TASK_NAME)
         syncCompiledGwt.description = "Copies GWT compiled output to webapp"
 
@@ -156,7 +156,7 @@ class Gwt2Plugin implements Plugin<Project> {
                               testSourceSet.runtimeClasspath,
                               mainSourceSet.resources.srcDirs,
                               mainSourceSet.java.srcDirs,
-                              mainSourceSet.classesDir,
+                              mainSourceSet.output.classesDir,
                               mainSourceSet.compileClasspath);
             }
 
@@ -165,7 +165,7 @@ class Gwt2Plugin implements Plugin<Project> {
 
 
     private void configureConfigurations(ConfigurationContainer configurationContainer) {
-        Configuration gwtConfiguration = configurationContainer.add(GWT_CONFIGURATION_NAME).setVisible(false).
+        Configuration gwtConfiguration = configurationContainer.create(GWT_CONFIGURATION_NAME).setVisible(false).
                 setDescription("Libraries required to compile this GWT project but not needed at runtime");
         try {
             configurationContainer.getByName(WarPlugin.PROVIDED_COMPILE_CONFIGURATION_NAME).extendsFrom(gwtConfiguration)
@@ -191,7 +191,7 @@ class Gwt2Plugin implements Plugin<Project> {
 
             if( excludePattern != null && excludePattern.length() > 0) {
                 war.doFirst {
-                    copyAction.rootSpec.eachFile { details ->
+                    rootSpec.eachFile { details ->
                         if (details.path.matches(excludePattern)) {
                             war.getLogger().debug("Excluding : {}", details.path);
                             details.exclude()

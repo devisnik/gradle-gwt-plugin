@@ -58,59 +58,46 @@ class CompileGwt extends AbstractGwtTask {
 
         if( modules == null || modules.size == 0 ) throw new StopActionException("No modules specified");
 
-        configureAntClasspath(getProject().ant, getClasspath())
-
-        Map otherArgs = [
-            classpathref: GWT_CLASSPATH_ID,
-            classname: COMPILER_CLASSNAME
-        ]
-      
-        ant.java(otherArgs + options.optionMap()) {
-            
-            options.forkOptions.jvmArgs.each { jvmarg(value: it) }
-            options.forkOptions.environment.each {String key, value -> env(key: key, value: value) }
-            options.systemProperties.each {String key, value -> sysproperty(key: key, value: value) }
+        project.javaexec {
+            main COMPILER_CLASSNAME
+            classpath( this.getClasspath())
 
             if (debug) {
-                arg(line: '-ea')
+                args '-ea'
             }
 
-            if (validateOnly) arg(line: '-validateOnly')
-            if (draftCompile) arg(line: '-draftCompile')
-            if (compileReport) arg(line: '-compileReport')
-            if (localWorkers > 1) arg(line: "-localWorkers ${localWorkers}")
+            args "-logLevel", "${logLevel}"
+            args "-style", "${style}"
 
-            if (disableClassMetadata) arg(line: "-disableClassMetadata")
-            if (disableCastChecking) arg(line: "-XdisableCastChecking")
+            if (validateOnly) args '-validateOnly'
+            if (draftCompile) args '-draftCompile'
+            if (compileReport) args '-compileReport'
+            if (localWorkers > 1) args "-localWorkers", "${localWorkers}"
 
-            arg(line: "-logLevel ${logLevel}")
-            arg(line: "-style ${style}")
+            if (disableClassMetadata) args "-disableClassMetadata"
+            if (disableCastChecking) args "-XdisableCastChecking"
 
             if (genDir) {
                 genDir.mkdirs()
-                arg(value: "-gen")
-                arg(value: "${genDir}")
+                args "-gen", "${genDir}"
             }
 
             if (workDir) {
                 workDir.mkdirs()
-                arg(value: "-workDir")
-                arg(value: "${workDir}")
+                args "-workDir", "${workDir}"
             }
 
             if (extraDir) {
                 extraDir.mkdirs()
-                arg(value: "-extra")
-                arg(value: "${extraDir}")
+                args "-extra", "${extraDir}"
             }
 
             buildDir.mkdirs()
-            arg(value: "-war")            
-            arg(value: "${buildDir}")
+            args "-war", "${buildDir}"
 
             modules.each {
                 logger.info("Compiling GWT Module {}", it)
-                arg(value: it)
+                args it
             }
         }
 
