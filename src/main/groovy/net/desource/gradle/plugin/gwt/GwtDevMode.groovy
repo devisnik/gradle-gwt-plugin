@@ -47,31 +47,22 @@ class GwtDevMode extends AbstractGwtTask {
 
         if( modules == null || modules.size == 0 ) throw new StopActionException("No modules specified");
 
-        configureAntClasspath(project.ant, classpath)
-
-        Map otherArgs = [
-            classpathref: GWT_CLASSPATH_ID,
-            classname: DEVMODE_CLASSNAME
-        ]
-
-        ant.java(otherArgs + options.optionMap()) {
+        project.javaexec {
+            main DEVMODE_CLASSNAME
+            classpath( this.getClasspath())
             
-            options.forkOptions.jvmArgs.each { jvmarg(value: it) }
-            options.forkOptions.environment.each {String key, value -> env(key: key, value: value) }
-            options.systemProperties.each {String key, value -> sysproperty(key: key, value: value) }
-            
-            if ( noserver ) arg(line: "-noserver")
+            if ( noserver ) args "-noserver"
 
-            if ( port > 0) arg(line: "-port ${port}")
-            if ( codeServerPort > 0) arg(line: "-codeServerPort ${codeServerPort}")
-            if ( bindAddress ) arg(line: "-bindAddress ${bindAddress}")
+            if ( port > 0) args "-port", "${port}"
+            if ( codeServerPort > 0) args "-codeServerPort","${codeServerPort}"
+            if ( bindAddress ) args "-bindAddress","${bindAddress}"
 
-            if ( whitelist ) arg(line: "-whitelist ${whitelist}")
-            if ( blacklist ) arg(line: "-blacklist ${blacklist}")
+            if ( whitelist ) args "-whitelist","${whitelist}"
+            if ( blacklist ) args "-blacklist","${blacklist}"
 
             startupUrls.each {
                 logger.info("Startup URL {}", it)
-                arg(line: "-startupUrl ${it}")
+                args "-startupUrl","${it}"
             }
 
             warDir.mkdirs()
@@ -82,33 +73,33 @@ class GwtDevMode extends AbstractGwtTask {
               AntUtil.execute(unzip);
             }
 
-            arg(line: "-war ${warDir}")
+            args "-war","${warDir}"
 
             if (logDir) {
                 logDir.mkdirs()
-                arg(line: "-logdir ${logDir}")
+                args "-logdir","${logDir}"
             }
-            arg(line: "-logLevel ${logLevel}")
+            args "-logLevel","${logLevel}"
 
             if (genDir) {
                 genDir.mkdirs()
-                arg(line: "-gen ${genDir}")
+                args "-gen","${genDir}"
             }
 
             if (workDir) {
                 workDir.mkdirs()
-                arg(line: "-workDir ${workDir}")
+                args "-workDir","${workDir}"
             }
 
             if (extraDir) {
                 extraDir.mkdirs()
-                arg(line: "-extra ${extraDir}")
+                args "-extra","${extraDir}"
             }
 
 
             modules.each {
                 logger.info("GWT Module {}", it)
-                arg(value: it)
+                args it
             }
         }
     }
