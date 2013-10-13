@@ -17,33 +17,14 @@ package org.gradle.api.plugins.gwt
 
 import org.gradle.api.Project
 
-/**
- *
- * 
- * @author Markus Kobler
- */
 class GwtPluginConvention {
 
     Project project
-
+    String gwtVersion = '2.5.1'
     List<String> gwtModules
-
     String excludePattern = "(.*/client/.*)|(.*/public/.*)|(.*.gwt.xml)"
 
     GwtPluginConvention(project) {
         this.project = project
     }
-
-    void setGwtModules(List<String> modules) {
-        gwtModules = modules
-    }
-
-    void setGwtModule(String module) {
-        gwtModules = [module]
-    }
-
-    void setGwtVersion(String version) {
-        project.logger.warn("gwtVersion Not Supported, explicitly define dependenices")
-    }
-
 }

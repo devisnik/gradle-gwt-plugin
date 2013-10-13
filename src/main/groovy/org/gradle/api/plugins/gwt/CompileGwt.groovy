@@ -56,7 +56,7 @@ class CompileGwt extends AbstractGwtTask {
     @TaskAction
     def compileGwt() {
 
-        if( modules == null || modules.size == 0 ) throw new StopActionException("No modules specified");
+        if( modules == null || modules.size == 0 ) throw new StopActionException("No gwtModules specified");
 
         project.javaexec {
             main COMPILER_CLASSNAME

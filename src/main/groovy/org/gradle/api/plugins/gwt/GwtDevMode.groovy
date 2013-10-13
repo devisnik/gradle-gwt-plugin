@@ -45,7 +45,7 @@ class GwtDevMode extends AbstractGwtTask {
     @TaskAction
     def executeDevMode() {
 
-        if( modules == null || modules.size == 0 ) throw new StopActionException("No modules specified");
+        if( modules == null || modules.size == 0 ) throw new StopActionException("No gwtModules specified");
 
         project.javaexec {
             main DEVMODE_CLASSNAME

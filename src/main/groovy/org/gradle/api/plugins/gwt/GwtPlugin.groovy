@@ -19,7 +19,10 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
+import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.UnknownConfigurationException
+import org.gradle.api.execution.TaskExecutionGraph
+import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.WarPlugin
@@ -40,8 +43,6 @@ class GwtPlugin implements Plugin<Project> {
 
     public static final String SYNC_COMPILED_GWT_TASK_NAME = "syncCompiledGwt"
 
-    // todo...
-    public static final String GWT_WAR_DEV_MODE_TASK_NAME = "gwtWarDevMode"
 
     void apply(Project project) {
         project.plugins.apply(JavaPlugin.class)
@@ -50,15 +51,13 @@ class GwtPlugin implements Plugin<Project> {
         GwtPluginConvention pluginConvention = new GwtPluginConvention(project)
         project.convention.plugins.gwt = pluginConvention
 
+        configureGwtDependenciesIfVersionSpecified(project, pluginConvention)
         addCompileGwtTask(project)
         addGwtDevModeTask(project)
 
         configureTestTaskDefaults(project)
 
         excludeFiles(project)
-
-        // disabled for time being
-//        addSyncCompiledGwtTask(project)
 
         configureConfigurations(project.configurations)
     }
@@ -76,16 +75,16 @@ class GwtPlugin implements Plugin<Project> {
             task.conventionMapping.modules = { project.convention.getPlugin(GwtPluginConvention.class).gwtModules }
 
             task.buildDir = project.file("build/gwt/out")
-            task.workDir  = project.file("build/gwt/work")
+            task.workDir = project.file("build/gwt/work")
             task.extraDir = project.file("build/gwt/extra")
-            task.genDir   = project.file("build/gwt/extra")
+            task.genDir = project.file("build/gwt/extra")
 
             task.conventionMapping.classpath = {
                 SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention.class).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
                 project.files(mainSourceSet.resources.srcDirs,
-                              mainSourceSet.java.srcDirs,
-                              mainSourceSet.output.classesDir,
-                              mainSourceSet.compileClasspath);
+                        mainSourceSet.java.srcDirs,
+                        mainSourceSet.output.classesDir,
+                        mainSourceSet.compileClasspath);
             }
 
         }
@@ -102,7 +101,6 @@ class GwtPlugin implements Plugin<Project> {
     }
 
 
-
     void addGwtDevModeTask(Project project) {
 
         project.tasks.withType(GwtDevMode.class).all { GwtDevMode task ->
@@ -112,7 +110,7 @@ class GwtPlugin implements Plugin<Project> {
             task.conventionMapping.classpath = {
                 SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention.class).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
 
-                // TODO optionally enable reloading of other local modules source code...
+                // TODO optionally enable reloading of other local gwtModules source code...
                 def reloadableResources = project.files(mainSourceSet.resources.srcDirs, mainSourceSet.java.srcDirs)
 
                 project.files(reloadableResources, mainSourceSet.runtimeClasspath)
@@ -156,11 +154,11 @@ class GwtPlugin implements Plugin<Project> {
                 SourceSet mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
 
                 project.files(testSourceSet.java.srcDirs,
-                              testSourceSet.runtimeClasspath,
-                              mainSourceSet.resources.srcDirs,
-                              mainSourceSet.java.srcDirs,
-                              mainSourceSet.output.classesDir,
-                              mainSourceSet.compileClasspath);
+                        testSourceSet.runtimeClasspath,
+                        mainSourceSet.resources.srcDirs,
+                        mainSourceSet.java.srcDirs,
+                        mainSourceSet.output.classesDir,
+                        mainSourceSet.compileClasspath);
             }
 
         }
@@ -180,8 +178,8 @@ class GwtPlugin implements Plugin<Project> {
     private File getWebappDir(Project project) {
         def webappDir = project.file("src/main/webapp")
         try {
-            webappDir =  project.convention.getPlugin(WarPluginConvention.class).webAppDir
-        } catch ( IllegalStateException ex ) {
+            webappDir = project.convention.getPlugin(WarPluginConvention.class).webAppDir
+        } catch (IllegalStateException ex) {
             // ignore
         }
         return webappDir;
@@ -192,7 +190,7 @@ class GwtPlugin implements Plugin<Project> {
 
             def excludePattern = project.convention.getPlugin(GwtPluginConvention.class).excludePattern
 
-            if( excludePattern != null && excludePattern.length() > 0) {
+            if (excludePattern != null && excludePattern.length() > 0) {
                 war.doFirst {
                     rootSpec.eachFile { details ->
                         if (details.path.matches(excludePattern)) {
@@ -205,52 +203,29 @@ class GwtPlugin implements Plugin<Project> {
         }
     }
 
-//    XXX re-implement?
-//    ====================================================================================================================
-//    private void configureGwtDependenciesIfVersionSpecified(final Project project, final GwtPluginConvention convention) {
-//        project.getGradle().getTaskGraph().whenReady {TaskExecutionGraph taskGraph ->
-//
-//            if( convention.gwtVersion != null && convention.gwtVersion.trim().length() > 0) {
-//
-//                def version = convention.gwtVersion.trim()
-//
-//                ExternalModuleDependency dependency = new DefaultExternalModuleDependency("com.google.gwt", "gwt-dev", version )
-//                project.configurations.getByName(GWT_CONFIGURATION_NAME).addDependency(dependency)
-//
-//                if (project.getTasks().findByName(WarPlugin.WAR_TASK_NAME) != null) {
-//
-//                    dependency = new DefaultExternalModuleDependency("com.google.gwt", "gwt-user", version )
-//                    project.configurations.getByName(WarPlugin.PROVIDED_COMPILE_CONFIGURATION_NAME).addDependency(dependency)
-//
-//                    dependency = new DefaultExternalModuleDependency("com.google.gwt", "gwt-servlet", version )
-//                    project.configurations.getByName(JavaPlugin.RUNTIME_CONFIGURATION_NAME).addDependency(dependency)
-//
-//                } else {
-//
-//                    dependency = new DefaultExternalModuleDependency("com.google.gwt", "gwt-user", version )
-//                    project.configurations.getByName(JavaPlugin.COMPILE_CONFIGURATION_NAME).addDependency(dependency)
-//
-//                }
-//
-//
-//            }
-//        }
-//    }
-//
-//    private void configureJarTaskDefaults(final Project project, final GwtPluginConvention pluginConvention) {
-//        Jar jarTask = (Jar) project.getTasks().findByName(JavaPlugin.JAR_TASK_NAME)
-//
-//        if (jarTask != null) {
-//
-//            jarTask.doFirst {
-//              SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention.class).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-//              if(pluginConvention.gwtArchiveAllSource) {
-//                jarTask.from(mainSourceSet.java)
-//              } else {
-//                jarTask.from(mainSourceSet.java.matching { include("**/client/**") });
-//              }
-//            }
-//        }
-//    }
+    private void configureGwtDependenciesIfVersionSpecified(
+            final Project project, final GwtPluginConvention convention) {
+        project.getGradle().getTaskGraph().whenReady { TaskExecutionGraph taskGraph ->
+            if (needToAddGwtDependencies(project, convention)) {
+                ExternalModuleDependency dependency = new DefaultExternalModuleDependency("com.google.gwt", "gwt-dev", convention.gwtVersion)
+                project.configurations.getByName(GWT_CONFIGURATION_NAME).dependencies.add(dependency)
+
+                if (project.getTasks().findByName(WarPlugin.WAR_TASK_NAME) != null) {
+                    dependency = new DefaultExternalModuleDependency("com.google.gwt", "gwt-user", convention.gwtVersion)
+                    project.configurations.getByName(WarPlugin.PROVIDED_COMPILE_CONFIGURATION_NAME).dependencies.add(dependency)
+
+                    dependency = new DefaultExternalModuleDependency("com.google.gwt", "gwt-servlet", convention.gwtVersion)
+                    project.configurations.getByName(JavaPlugin.RUNTIME_CONFIGURATION_NAME).dependencies.add(dependency)
+                } else {
+                    dependency = new DefaultExternalModuleDependency("com.google.gwt", "gwt-user", convention.gwtVersion)
+                    project.configurations.getByName(JavaPlugin.COMPILE_CONFIGURATION_NAME).dependencies.add(dependency)
+                }
+            }
+        }
+    }
+
+    private boolean needToAddGwtDependencies(Project project, GwtPluginConvention convention) {
+        convention.gwtVersion
+    }
 
 }

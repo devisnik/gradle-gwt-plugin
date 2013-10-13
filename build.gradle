@@ -1,7 +1,7 @@
 defaultTasks 'assemble'
 
 repositories {
-    maven { url { 'http://repo.gradle.org/gradle/libs' } }
+    mavenCentral()
 }
 
 allprojects {

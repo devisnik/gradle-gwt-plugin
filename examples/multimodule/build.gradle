@@ -5,7 +5,7 @@ defaultTasks 'assemble'
 
 buildscript {
     repositories { flatDir(dirs: "${rootProject.projectDir}/../../build/libs") }
-    dependencies { classpath 'net.desource.gradle:gradle-gwt-plugin:0.3-SNAPSHOT' }
+    dependencies { classpath 'org.gradle.api.plugins:gradle-gwt-plugin:0.1-SNAPSHOT' }
 }
 
 group = 'net.desource.samples'
@@ -24,7 +24,15 @@ subprojects {
   }
 
   dependencies {
-      compile 'com.google.gwt.inject:gin:1.0@jar', 'com.google.gwt.inject:guice:2.0@jar', 'aopalliance:aopalliance:1.0@jar'
+      compile 'aopalliance:aopalliance:1.0@jar',
+              'javax.inject:javax.inject:1@jar',
+              'javax.validation:validation-api:1.0.0.GA',
+              'javax.validation:validation-api:1.0.0.GA:sources',
+              'com.google.gwt.inject:gin:1.5.0@jar',
+              'com.google.inject:guice:3.0@jar',
+              'com.google.inject.extensions:guice-assistedinject:3.0@jar',
+              'com.google.gwt:gwt-user:2.3.0@jar',
+              'com.google.gwt:gwt-dev:2.3.0@jar'
       testCompile 'junit:junit:4.7@jar', 'org.mockito:mockito-all:1.8.1@jar'
   }
 
@@ -39,7 +47,7 @@ subprojects {
 project(":common") {
 
   apply plugin: 'war'
-  apply plugin: 'gwt2'
+  apply plugin: 'gwt'
 
   gwtVersion = '2.0.4'
   gwtArchiveAllSource = true
@@ -48,7 +56,7 @@ project(":common") {
 project(":client") {
 
   apply plugin: "jetty"
-  apply plugin: 'gwt2'
+  apply plugin: 'gwt'
 
   dependencies {
     compile project(":common")
