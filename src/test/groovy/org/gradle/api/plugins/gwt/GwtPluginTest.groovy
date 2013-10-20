@@ -18,6 +18,7 @@ package org.gradle.api.plugins.gwt
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.WarPlugin
 import org.gradle.api.plugins.gwt.CompileGwt
 import org.gradle.api.plugins.gwt.GwtPlugin
 import org.gradle.api.plugins.gwt.GwtPluginConvention
@@ -31,9 +32,6 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf
 import static org.junit.Assert.assertThat
 import static org.junit.Assert.assertTrue
 
-/**
- * 
- */
 class GwtPluginTest {
 
     private Project project
@@ -42,6 +40,7 @@ class GwtPluginTest {
     @Before
     public void setUp() {
         project = ProjectBuilder.builder().build()
+        project.plugins.apply(WarPlugin.class)
         gwt2Plugin = new GwtPlugin()
     }
 
@@ -60,7 +59,6 @@ class GwtPluginTest {
         assertThat(task, dependsOn(JavaPlugin.CLASSES_TASK_NAME))
 
     }
-
 
     @Factory
     public static Matcher<Task> dependsOn(final String... tasks) {
