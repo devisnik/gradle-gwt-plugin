@@ -22,12 +22,12 @@ import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.UnknownConfigurationException
 import org.gradle.api.execution.TaskExecutionGraph
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.WarPlugin
 import org.gradle.api.plugins.WarPluginConvention
 import org.gradle.api.tasks.SourceSet
-import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.bundling.War
 import org.gradle.api.tasks.testing.Test
@@ -98,21 +98,10 @@ class GwtPlugin implements Plugin<Project> {
 
             task.conventionMapping.classpath = {
                 SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention.class).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-                def classpath = project.files(mainSourceSet.resources.srcDirs,
-                        mainSourceSet.java.srcDirs,
-                        mainSourceSet.output.classesDir,
-                        mainSourceSet.compileClasspath);
-                // add sources from project style dependencies
-                project.configurations.gwt.dependencies.withType(ProjectDependency.class).each {
-                    def sourceSets = it.dependencyProject.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-                    it.dependencyProject.with {
-                        classpath += files(
-                                sourceSets.resources.srcDirs,
-                                sourceSets.java.srcDirs,
-                        )
-                    }
-                }
-                classpath
+                def sourcesFromProject = project.files(mainSourceSet.resources.srcDirs, mainSourceSet.java.srcDirs, mainSourceSet.output.classesDir, mainSourceSet.compileClasspath)
+                def sourcesFromDependentProjects = sourcesFromDependentProjects(project)
+                if (sourcesFromDependentProjects) return sourcesFromProject + sourcesFromDependentProjects
+                return sourcesFromProject
             }
         }
 
@@ -128,6 +117,16 @@ class GwtPlugin implements Plugin<Project> {
         compileGwt.description = "Compile GWT Modules"
     }
 
+    private static def sourcesFromDependentProjects(Project project) {
+        project.configurations.gwt.dependencies.withType(ProjectDependency.class).collect {
+            def sourceSets = it.dependencyProject.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
+            it.dependencyProject.files(
+                    sourceSets.resources.srcDirs,
+                    sourceSets.java.srcDirs,
+            )
+        }
+    }
+
 
     void addGwtDevModeTask(Project project) {
 
@@ -141,7 +140,10 @@ class GwtPlugin implements Plugin<Project> {
                 // TODO optionally enable reloading of other local gwtModules source code...
                 def reloadableResources = project.files(mainSourceSet.resources.srcDirs, mainSourceSet.java.srcDirs)
 
-                project.files(reloadableResources, mainSourceSet.runtimeClasspath)
+                def sourcesFromProject = project.files(reloadableResources, mainSourceSet.runtimeClasspath)
+                def sourcesFromDependentProjects = sourcesFromDependentProjects(project)
+                if (sourcesFromDependentProjects) return sourcesFromProject + sourcesFromDependentProjects
+                return sourcesFromProject
             }
 
             task.conventionMapping.warDir = {
