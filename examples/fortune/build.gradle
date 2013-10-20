@@ -23,10 +23,10 @@ repositories {
 dependencies {
     gwt 'aopalliance:aopalliance:1.0@jar'
     gwt 'javax.inject:javax.inject:1@jar'
-//        'javax.validation:validation-api:1.0.0.GA',
-//        'javax.validation:validation-api-sources:1.0.0.GA',
     gwt 'com.google.gwt.inject:gin:1.5.0@jar'
     gwt 'com.google.inject:guice:3.0@jar'
+    gwt 'javax.validation:validation-api:1.0.0.GA'
+    gwt 'javax.validation:validation-api:1.0.0.GA:sources'
     gwt 'com.google.inject.extensions:guice-assistedinject:3.0@jar'
 
     testCompile 'junit:junit:4.7@jar', 'org.mockito:mockito-all:1.8.1@jar'
@@ -39,10 +39,10 @@ test {
     jvmArgs '-Xmx256m', '-XX:+HeapDumpOnOutOfMemoryError'
 }
 
-
-gwtModules = ['net.desource.samples.fortune.App']
-gwtVersion = '2.3.0'
-
+gwt {
+    gwtModules = ['net.desource.samples.fortune.App']
+    gwtVersion = '2.3.0'
+}
 compileGwt {
     style = 'DETAILED' // Script output style: OBF[USCATED], PRETTY, or DETAILED (defaults to OBF)
     compileReport = true

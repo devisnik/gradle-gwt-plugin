@@ -27,4 +27,9 @@ class GwtPluginConvention {
     GwtPluginConvention(project) {
         this.project = project
     }
+
+    def gwt(Closure closure) {
+        closure.delegate = this
+        closure()
+    }
 }

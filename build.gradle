@@ -1,14 +1,12 @@
+apply plugin: 'groovy'
+
 defaultTasks 'assemble'
+
+group = 'org.gradle.api.plugins'
+version = '0.1-SNAPSHOT'
 
 repositories {
     mavenCentral()
-}
-
-allprojects {
-    apply plugin: 'groovy'
-
-    group = 'org.gradle.api.plugins'
-    version = '0.1-SNAPSHOT'
 }
 
 dependencies {
@@ -17,7 +15,7 @@ dependencies {
     testCompile 'junit:junit:4.11'
 }
 
-task wrapper ( type : Wrapper ) {
-  gradleVersion = '1.8'
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.8'
     jarFile = '.wrapper/gradle-wrapper.jar'
 }

@@ -14,59 +14,61 @@ version = '0.2-SNAPSHOT'
 
 subprojects {
 
-  apply plugin: 'java'
+    apply plugin: 'java'
 
-  sourceCompatibility = 1.5
-  targetCompatibility = 1.5
+    sourceCompatibility = 1.5
+    targetCompatibility = 1.5
 
-  repositories {
-      mavenCentral()
-  }
+    repositories {
+        mavenCentral()
+    }
 
-  dependencies {
-      compile 'aopalliance:aopalliance:1.0@jar',
-              'javax.inject:javax.inject:1@jar',
-              'javax.validation:validation-api:1.0.0.GA',
-              'javax.validation:validation-api:1.0.0.GA:sources',
-              'com.google.gwt.inject:gin:1.5.0@jar',
-              'com.google.inject:guice:3.0@jar',
-              'com.google.inject.extensions:guice-assistedinject:3.0@jar',
-              'com.google.gwt:gwt-user:2.3.0@jar',
-              'com.google.gwt:gwt-dev:2.3.0@jar'
-      testCompile 'junit:junit:4.7@jar', 'org.mockito:mockito-all:1.8.1@jar'
-  }
+    dependencies {
+        compile 'aopalliance:aopalliance:1.0@jar',
+                'javax.inject:javax.inject:1@jar',
+                'javax.validation:validation-api:1.0.0.GA',
+                'javax.validation:validation-api:1.0.0.GA:sources',
+                'com.google.gwt.inject:gin:1.5.0@jar',
+                'com.google.inject:guice:3.0@jar',
+                'com.google.inject.extensions:guice-assistedinject:3.0@jar',
+                'com.google.gwt:gwt-user:2.3.0@jar',
+                'com.google.gwt:gwt-dev:2.3.0@jar'
+        testCompile 'junit:junit:4.7@jar', 'org.mockito:mockito-all:1.8.1@jar'
+    }
 
-  test {
-    ignoreFailures = true
-    jvmArgs '-Xmx256m', '-XX:+HeapDumpOnOutOfMemoryError'
-  }
+    test {
+        ignoreFailures = true
+        jvmArgs '-Xmx256m', '-XX:+HeapDumpOnOutOfMemoryError'
+    }
 
 }
 
 
 project(":common") {
 
-  apply plugin: 'war'
-  apply plugin: 'gwt'
+    apply plugin: 'gwt'
 
-  gwtVersion = '2.0.4'
-  gwtArchiveAllSource = true
+    gwt {
+        gwtVersion = '2.0.4'
+    }
 }
 
 project(":client") {
 
-  apply plugin: "jetty"
-  apply plugin: 'gwt'
+    apply plugin: 'jetty'
+    apply plugin: 'gwt'
 
-  dependencies {
-    compile project(":common")
-  }
+    dependencies {
+        gwt project(":common")
+    }
 
-  [jettyRun, jettyRunWar]*.contextPath = '/'
+    [jettyRun, jettyRunWar]*.contextPath = '/'
 
-  gwtVersion = '2.0.4'
-  gwtModules = ['sample.Client']
-  gwtStartupUrls = ['/']
+    gwt {
+        gwtVersion = '2.0.4'
+        gwtModules = ['sample.Client']
+        gwtStartupUrls = ['/']
+    }
 
 }
 
