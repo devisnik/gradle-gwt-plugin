@@ -15,6 +15,7 @@
  */
 package org.gradle.api.plugins.gwt
 
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.StopActionException
@@ -25,7 +26,7 @@ import org.gradle.api.tasks.TaskAction
  * @author Markus Kobler
  */
 class CompileGwt extends AbstractGwtTask {
-    
+
     static final String COMPILER_CLASSNAME = 'com.google.gwt.dev.Compiler'
 
     File buildDir
@@ -56,11 +57,13 @@ class CompileGwt extends AbstractGwtTask {
     @TaskAction
     def compileGwt() {
 
-        if( modules == null || modules.size == 0 ) throw new StopActionException("No gwtModules specified");
+        if (modules == null || modules.size == 0) throw new StopActionException("No gwtModules specified");
+
+        logging.captureStandardOutput LogLevel.INFO
 
         project.javaexec {
             main COMPILER_CLASSNAME
-            classpath( this.getClasspath())
+            classpath(this.getClasspath())
 
             if (debug) {
                 args '-ea'
