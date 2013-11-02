@@ -69,7 +69,7 @@ class CompileGwt extends AbstractGwtTask {
         if (compileReport) args '-compileReport'
         if (localWorkers > 1) args "-localWorkers", "${localWorkers}"
 
-        if (disableClassMetadata) args "-disableClassMetadata"
+        if (disableClassMetadata) args "-XdisableClassMetadata"
         if (disableCastChecking) args "-XdisableCastChecking"
 
         if (genDir) {
