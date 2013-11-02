@@ -1,4 +1,4 @@
-# Gradle GWT plugin
+# Gradle GWT plugin https://travis-ci.org/youribonnaffe/gradle-gwt-plugin#
 
 ## Usage
 
@@ -17,7 +17,7 @@ example on how to retrieve it from Bintray:
         }
 
         dependencies {
-            classpath 'org.gradle.api.plugins:gradle-gwt-plugin:0.1-20102013'
+            classpath 'org.gradle.api.plugins:gradle-gwt-plugin:0.1-02112013'
         }
     }
 
@@ -97,3 +97,4 @@ Based on https://github.com/desource/gradle-gwt-plugin and inspired by GWT Maven
 
 Readme format from https://github.com/bmuschko/gradle-gae-plugin
 
+Travis CI: [![Build Status](https://travis-ci.org/youribonnaffe/gradle-gwt-plugin.png)](https://travis-ci.org/youribonnaffe/gradle-gwt-plugin])
