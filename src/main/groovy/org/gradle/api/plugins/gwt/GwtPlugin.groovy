@@ -23,6 +23,7 @@ import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.UnknownConfigurationException
 import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.WarPlugin
@@ -50,6 +51,10 @@ class GwtPlugin implements Plugin<Project> {
         GwtPluginConvention pluginConvention = new GwtPluginConvention(project)
         project.convention.plugins.gwt = pluginConvention
 
+        excludeFiles(project)
+
+        configureConfigurations(project.configurations)
+
         if (project.plugins.hasPlugin(WarPlugin.class)) {
             addCompileGwtTask(project)
             addGwtDevModeTask(project)
@@ -59,9 +64,6 @@ class GwtPlugin implements Plugin<Project> {
         }
 
 
-        excludeFiles(project)
-
-        configureConfigurations(project.configurations)
         configureGwtDependenciesIfVersionSpecified(project, pluginConvention)
 
     }
@@ -80,13 +82,6 @@ class GwtPlugin implements Plugin<Project> {
     }
 
     void addCompileGwtTask(Project project) {
-
-        // this is a bit experimental but will stop all gwt libraries being compiled
-        project.tasks.getByName(JavaPlugin.COMPILE_JAVA_TASK_NAME) {
-            SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention.class).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-            options.compilerArgs.addAll(['-sourcepath', mainSourceSet.java.getAsPath()])
-        }
-
         project.tasks.withType(CompileGwt.class).all { CompileGwt task ->
 
             task.conventionMapping.modules = { project.convention.getPlugin(GwtPluginConvention.class).gwtModules }
@@ -95,14 +90,7 @@ class GwtPlugin implements Plugin<Project> {
             task.workDir = project.file("build/gwt/work")
             task.extraDir = project.file("build/gwt/extra")
             task.genDir = project.file("build/gwt/extra")
-
-            task.conventionMapping.classpath = {
-                SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention.class).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-                def sourcesFromProject = project.files(mainSourceSet.resources.srcDirs, mainSourceSet.java.srcDirs, mainSourceSet.output.classesDir, mainSourceSet.compileClasspath)
-                def sourcesFromDependentProjects = sourcesFromDependentProjects(project)
-                if (sourcesFromDependentProjects) return sourcesFromProject + sourcesFromDependentProjects
-                return sourcesFromProject
-            }
+            task.classpath = gwtTaskClasspath(project)
         }
 
         CompileGwt compileGwt = project.tasks.create(COMPILE_GWT_TASK_NAME, CompileGwt.class)
@@ -115,6 +103,14 @@ class GwtPlugin implements Plugin<Project> {
         }
 
         compileGwt.description = "Compile GWT Modules"
+    }
+
+    private FileCollection gwtTaskClasspath(Project project) {
+        SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention.class).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
+        def sourcesFromProject = project.files(mainSourceSet.resources.srcDirs, mainSourceSet.java.srcDirs, mainSourceSet.output.classesDir, mainSourceSet.compileClasspath)
+        def sourcesFromDependentProjects = sourcesFromDependentProjects(project)
+        if (sourcesFromDependentProjects) return sourcesFromProject + sourcesFromDependentProjects
+        return sourcesFromProject
     }
 
     private static def sourcesFromDependentProjects(Project project) {
@@ -133,22 +129,8 @@ class GwtPlugin implements Plugin<Project> {
         project.tasks.withType(GwtDevMode.class).all { GwtDevMode task ->
 
             task.conventionMapping.modules = { project.convention.getPlugin(GwtPluginConvention.class).gwtModules }
-
-            task.conventionMapping.classpath = {
-                SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention.class).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-
-                // TODO optionally enable reloading of other local gwtModules source code...
-                def reloadableResources = project.files(mainSourceSet.resources.srcDirs, mainSourceSet.java.srcDirs)
-
-                def sourcesFromProject = project.files(reloadableResources, mainSourceSet.runtimeClasspath)
-                def sourcesFromDependentProjects = sourcesFromDependentProjects(project)
-                if (sourcesFromDependentProjects) return sourcesFromProject + sourcesFromDependentProjects
-                return sourcesFromProject
-            }
-
-            task.conventionMapping.warDir = {
-                getWebappDir(project)
-            }
+            task.classpath = getGwtDevModeTaskClasspath(project)
+            task.warDir = getWebappDir(project)
         }
 
         GwtDevMode gwtDevMode = project.tasks.create(GWT_DEV_MODE_TASK_NAME, GwtDevMode.class)
@@ -156,6 +138,17 @@ class GwtPlugin implements Plugin<Project> {
         gwtDevMode.dependsOn(JavaPlugin.CLASSES_TASK_NAME)
         gwtDevMode.description = "Run's GWT Developer Mode"
 
+    }
+
+    private FileCollection  getGwtDevModeTaskClasspath(Project project) {
+        SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention.class).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
+        // TODO optionally enable reloading of other local gwtModules source code...
+        def reloadableResources = project.files(mainSourceSet.resources.srcDirs, mainSourceSet.java.srcDirs)
+
+        def sourcesFromProject = project.files(reloadableResources, mainSourceSet.runtimeClasspath)
+        def sourcesFromDependentProjects = sourcesFromDependentProjects(project)
+        if (sourcesFromDependentProjects) return sourcesFromProject + sourcesFromDependentProjects
+        return sourcesFromProject
     }
 
     private void configureTestTaskDefaults(final Project project) {
@@ -200,6 +193,7 @@ class GwtPlugin implements Plugin<Project> {
         } catch (IllegalStateException ex) {
             // ignore
         }
+        println "====>" + webappDir
         return webappDir;
     }
 

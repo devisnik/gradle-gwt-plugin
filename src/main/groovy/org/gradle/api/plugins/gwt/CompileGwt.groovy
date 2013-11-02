@@ -20,6 +20,7 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.StopActionException
 import org.gradle.api.tasks.TaskAction
+import org.gradle.process.internal.JvmOptions
 
 /**
  *
@@ -39,14 +40,9 @@ class CompileGwt extends AbstractGwtTask {
     boolean compileReport
     int localWorkers
 
-
     def CompileGwt() {
         localWorkers = Runtime.getRuntime().availableProcessors();
-    }
-
-    @InputFiles
-    Iterable<File> getClasspath() {
-        super.getClasspath()
+        setMain(COMPILER_CLASSNAME)
     }
 
     @OutputDirectory
@@ -54,56 +50,51 @@ class CompileGwt extends AbstractGwtTask {
         buildDir
     }
 
-    @TaskAction
-    def compileGwt() {
 
-        if (modules == null || modules.size == 0) throw new StopActionException("No gwtModules specified");
+    @Override
+    void exec() {
+        if (!modules) throw new StopActionException("No gwtModules specified");
+        logger.info("Classpath {}", classpath.files)
 
         logging.captureStandardOutput LogLevel.INFO
-
-        project.javaexec {
-            main COMPILER_CLASSNAME
-            classpath(this.getClasspath())
-
-            if (debug) {
-                args '-ea'
-            }
-
-            args "-logLevel", "${logLevel}"
-            args "-style", "${style}"
-
-            if (validateOnly) args '-validateOnly'
-            if (draftCompile) args '-draftCompile'
-            if (compileReport) args '-compileReport'
-            if (localWorkers > 1) args "-localWorkers", "${localWorkers}"
-
-            if (disableClassMetadata) args "-disableClassMetadata"
-            if (disableCastChecking) args "-XdisableCastChecking"
-
-            if (genDir) {
-                genDir.mkdirs()
-                args "-gen", "${genDir}"
-            }
-
-            if (workDir) {
-                workDir.mkdirs()
-                args "-workDir", "${workDir}"
-            }
-
-            if (extraDir) {
-                extraDir.mkdirs()
-                args "-extra", "${extraDir}"
-            }
-
-            buildDir.mkdirs()
-            args "-war", "${buildDir}"
-
-            modules.each {
-                logger.info("Compiling GWT Module {}", it)
-                args it
-            }
+        if (debug) {
+            args '-ea'
         }
 
+        args "-logLevel", "${logLevel}"
+        args "-style", "${style}"
+
+        if (validateOnly) args '-validateOnly'
+        if (draftCompile) args '-draftCompile'
+        if (compileReport) args '-compileReport'
+        if (localWorkers > 1) args "-localWorkers", "${localWorkers}"
+
+        if (disableClassMetadata) args "-disableClassMetadata"
+        if (disableCastChecking) args "-XdisableCastChecking"
+
+        if (genDir) {
+            genDir.mkdirs()
+            args "-gen", "${genDir}"
+        }
+
+        if (workDir) {
+            workDir.mkdirs()
+            args "-workDir", "${workDir}"
+        }
+
+        if (extraDir) {
+            extraDir.mkdirs()
+            args "-extra", "${extraDir}"
+        }
+
+        buildDir.mkdirs()
+        args "-war", "${buildDir}"
+
+        modules.each {
+            logger.info("Compiling GWT Module {}", it)
+            args it
+        }
+        super.exec()
     }
 
 }

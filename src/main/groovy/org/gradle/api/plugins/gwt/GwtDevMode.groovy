@@ -33,7 +33,6 @@ class GwtDevMode extends AbstractGwtTask {
     String whitelist
     String blacklist
     File logDir;
-    Class/*<ServletContainerLauncher>*/ server
     int codeServerPort = 0;
     String bindAddress;
 
@@ -41,67 +40,126 @@ class GwtDevMode extends AbstractGwtTask {
     File webApp
 
     List<String> startupUrls
-  
-    @TaskAction
-    def executeDevMode() {
 
-        if( modules == null || modules.size == 0 ) throw new StopActionException("No gwtModules specified");
+    @Override
+    void exec() {
+        if (!modules) throw new StopActionException("No gwtModules specified");
 
-        project.javaexec {
-            main DEVMODE_CLASSNAME
-            classpath( this.getClasspath())
-            
-            if ( noserver ) args "-noserver"
+        main = DEVMODE_CLASSNAME
 
-            if ( port > 0) args "-port", "${port}"
-            if ( codeServerPort > 0) args "-codeServerPort","${codeServerPort}"
-            if ( bindAddress ) args "-bindAddress","${bindAddress}"
+        if (noserver) args "-noserver"
 
-            if ( whitelist ) args "-whitelist","${whitelist}"
-            if ( blacklist ) args "-blacklist","${blacklist}"
+        if (port > 0) args "-port", "${port}"
+        if (codeServerPort > 0) args "-codeServerPort", "${codeServerPort}"
+        if (bindAddress) args "-bindAddress", "${bindAddress}"
 
-            startupUrls.each {
-                logger.info("Startup URL {}", it)
-                args "-startupUrl","${it}"
-            }
+        if (whitelist) args "-whitelist", "${whitelist}"
+        if (blacklist) args "-blacklist", "${blacklist}"
 
-            warDir.mkdirs()
-            if( webApp != null && webApp.exists() ) {
-              Expand unzip = new Expand();
-              unzip.src = webApp;
-              unzip.dest = warDir;
-              AntUtil.execute(unzip);
-            }
-
-            args "-war","${warDir}"
-
-            if (logDir) {
-                logDir.mkdirs()
-                args "-logdir","${logDir}"
-            }
-            args "-logLevel","${logLevel}"
-
-            if (genDir) {
-                genDir.mkdirs()
-                args "-gen","${genDir}"
-            }
-
-            if (workDir) {
-                workDir.mkdirs()
-                args "-workDir","${workDir}"
-            }
-
-            if (extraDir) {
-                extraDir.mkdirs()
-                args "-extra","${extraDir}"
-            }
-
-
-            modules.each {
-                logger.info("GWT Module {}", it)
-                args it
-            }
+        startupUrls.each {
+            logger.info("Startup URL {}", it)
+            args "-startupUrl", "${it}"
         }
+
+        warDir.mkdirs()
+        if (webApp != null && webApp.exists()) {
+            Expand unzip = new Expand();
+            unzip.src = webApp;
+            unzip.dest = warDir;
+            AntUtil.execute(unzip);
+        }
+
+        args "-war", "${warDir}"
+
+        if (logDir) {
+            logDir.mkdirs()
+            args "-logdir", "${logDir}"
+        }
+        args "-logLevel", "${logLevel}"
+
+        if (genDir) {
+            genDir.mkdirs()
+            args "-gen", "${genDir}"
+        }
+
+        if (workDir) {
+            workDir.mkdirs()
+            args "-workDir", "${workDir}"
+        }
+
+        if (extraDir) {
+            extraDir.mkdirs()
+            args "-extra", "${extraDir}"
+        }
+
+
+        modules.each {
+            logger.info("GWT Module {}", it)
+            args it
+        }
+
+        super.exec()
     }
+
+//    @TaskAction
+//    def executeDevMode() {
+//
+//
+//        project.javaexec {
+//            main DEVMODE_CLASSNAME
+//            classpath( this.getClasspath())
+//
+//            if ( noserver ) args "-noserver"
+//
+//            if ( port > 0) args "-port", "${port}"
+//            if ( codeServerPort > 0) args "-codeServerPort","${codeServerPort}"
+//            if ( bindAddress ) args "-bindAddress","${bindAddress}"
+//
+//            if ( whitelist ) args "-whitelist","${whitelist}"
+//            if ( blacklist ) args "-blacklist","${blacklist}"
+//
+//            startupUrls.each {
+//                logger.info("Startup URL {}", it)
+//                args "-startupUrl","${it}"
+//            }
+//
+//            warDir.mkdirs()
+//            if( webApp != null && webApp.exists() ) {
+//              Expand unzip = new Expand();
+//              unzip.src = webApp;
+//              unzip.dest = warDir;
+//              AntUtil.execute(unzip);
+//            }
+//
+//            args "-war","${warDir}"
+//
+//            if (logDir) {
+//                logDir.mkdirs()
+//                args "-logdir","${logDir}"
+//            }
+//            args "-logLevel","${logLevel}"
+//
+//            if (genDir) {
+//                genDir.mkdirs()
+//                args "-gen","${genDir}"
+//            }
+//
+//            if (workDir) {
+//                workDir.mkdirs()
+//                args "-workDir","${workDir}"
+//            }
+//
+//            if (extraDir) {
+//                extraDir.mkdirs()
+//                args "-extra","${extraDir}"
+//            }
+//
+//
+//            modules.each {
+//                logger.info("GWT Module {}", it)
+//                args it
+//            }
+//        }
+//    }
 
 }

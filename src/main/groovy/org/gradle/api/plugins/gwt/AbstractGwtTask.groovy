@@ -15,42 +15,14 @@
  */
 package org.gradle.api.plugins.gwt
 
-import org.gradle.api.file.FileCollection
-import org.gradle.api.internal.ConventionTask
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.gradle.api.AntBuilder
+import org.gradle.api.tasks.JavaExec
 
-/**
- *
- * @author Markus Kobler
- */
-abstract class AbstractGwtTask extends ConventionTask {
+abstract class AbstractGwtTask extends JavaExec {
 
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    static final String GWT_CLASSPATH_ID = 'gwt.classpath'
-
-    FileCollection classpath  
-    JavaOptions options = new JavaOptions();
     String logLevel ='INFO'
     File genDir;    
     File extraDir    
     File workDir
 
     List<String> modules
-
-    Iterable<File> getClasspath() {
-      return classpath;
-    }
-
-    protected void configureAntClasspath(AntBuilder ant, Iterable classpath) {
-        ant.path(id: GWT_CLASSPATH_ID) {
-            classpath.each {
-                logger.debug("GWT classpath {}", it)
-                pathelement(location: it)
-            }
-        }
-    }
-
 }
