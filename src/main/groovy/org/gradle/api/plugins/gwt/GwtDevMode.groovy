@@ -37,7 +37,6 @@ class GwtDevMode extends AbstractGwtTask {
     String bindAddress;
 
     File warDir
-    File webApp
 
     List<String> startupUrls
 
@@ -62,12 +61,6 @@ class GwtDevMode extends AbstractGwtTask {
         }
 
         warDir.mkdirs()
-        if (webApp != null && webApp.exists()) {
-            Expand unzip = new Expand();
-            unzip.src = webApp;
-            unzip.dest = warDir;
-            AntUtil.execute(unzip);
-        }
 
         args "-war", "${warDir}"
 
@@ -100,66 +93,5 @@ class GwtDevMode extends AbstractGwtTask {
 
         super.exec()
     }
-
-//    @TaskAction
-//    def executeDevMode() {
-//
-//
-//        project.javaexec {
-//            main DEVMODE_CLASSNAME
-//            classpath( this.getClasspath())
-//
-//            if ( noserver ) args "-noserver"
-//
-//            if ( port > 0) args "-port", "${port}"
-//            if ( codeServerPort > 0) args "-codeServerPort","${codeServerPort}"
-//            if ( bindAddress ) args "-bindAddress","${bindAddress}"
-//
-//            if ( whitelist ) args "-whitelist","${whitelist}"
-//            if ( blacklist ) args "-blacklist","${blacklist}"
-//
-//            startupUrls.each {
-//                logger.info("Startup URL {}", it)
-//                args "-startupUrl","${it}"
-//            }
-//
-//            warDir.mkdirs()
-//            if( webApp != null && webApp.exists() ) {
-//              Expand unzip = new Expand();
-//              unzip.src = webApp;
-//              unzip.dest = warDir;
-//              AntUtil.execute(unzip);
-//            }
-//
-//            args "-war","${warDir}"
-//
-//            if (logDir) {
-//                logDir.mkdirs()
-//                args "-logdir","${logDir}"
-//            }
-//            args "-logLevel","${logLevel}"
-//
-//            if (genDir) {
-//                genDir.mkdirs()
-//                args "-gen","${genDir}"
-//            }
-//
-//            if (workDir) {
-//                workDir.mkdirs()
-//                args "-workDir","${workDir}"
-//            }
-//
-//            if (extraDir) {
-//                extraDir.mkdirs()
-//                args "-extra","${extraDir}"
-//            }
-//
-//
-//            modules.each {
-//                logger.info("GWT Module {}", it)
-//                args it
-//            }
-//        }
-//    }
 
 }

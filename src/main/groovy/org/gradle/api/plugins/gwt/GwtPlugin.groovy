@@ -193,7 +193,6 @@ class GwtPlugin implements Plugin<Project> {
         } catch (IllegalStateException ex) {
             // ignore
         }
-        println "====>" + webappDir
         return webappDir;
     }
 
