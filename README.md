@@ -1,4 +1,4 @@
-# Gradle GWT plugin [![Build Status](https://travis-ci.org/youribonnaffe/gradle-gwt-plugin#)
+# Gradle GWT plugin
 
 ## Usage
 
